@@ -9,25 +9,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Compile manually
+      - name: List files
         run: |
-          cd bad_query
-          mkdir -p build
-          swiftc -sdk $(xcrun --show-sdk-path --sdk iphoneos) -target arm64-apple-ios -emit-object -o build/bad_query.o bad_query.c
-          swiftc -sdk $(xcrun --show-sdk-path --sdk iphoneos) -target arm64-apple-ios -emit-object -o build/ContentView.o ContentView.swift
-          swiftc -sdk $(xcrun --show-sdk-path --sdk iphoneos) -target arm64-apple-ios -o build/bad_query build/bad_query.o build/ContentView.o
+          ls -la
+          ls -la bad_query/
 
-      - name: Create app bundle
+      - name: Compile
         run: |
           cd bad_query
-          mkdir -p Payload/bad_query.app
-          cp build/bad_query Payload/bad_query.app/
-          cp -r Assets.xcassets Payload/bad_query.app/ || true
-          echo "APPL????" > Payload/bad_query.app/PkgInfo
+          ls -la
+          mkdir -p build
+          xcrun -sdk iphoneos clang -arch arm64 -c *.c -o build/bad_query.o
+          xcrun -sdk iphoneos clang -arch arm64 build/bad_query.o -o build/bad_query
 
       - name: Create IPA
         run: |
           cd bad_query
+          mkdir -p Payload/bad_query.app
+          cp build/bad_query Payload/bad_query.app/
+          echo "APPL????" > Payload/bad_query.app/PkgInfo
           zip -r bad_query.ipa Payload
 
       - name: Upload IPA
