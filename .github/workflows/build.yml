@@ -9,29 +9,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: List files
+      - name: Show project structure
         run: ls -la
 
-      - name: Build app
+      - name: Build .app
         run: |
-          xcodebuild -project bad_query.xcodeproj -scheme bad_query -sdk iphoneos -configuration Release archive -archivePath bad_query.xcarchive
+          xcodebuild -project bad_query.xcodeproj -scheme bad_query -sdk iphoneos -configuration Release build CONFIGURATION_BUILD_DIR=./build
 
-      - name: Export IPA
+      - name: Create IPA
         run: |
-          mkdir -p build/
-          xcodebuild -exportArchive -archivePath bad_query.xcarchive -exportPath build/ -exportOptionsPlist /dev/stdin <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-            <dict>
-              <key>method</key>
-              <string>development</string>
-            </dict>
-          </plist>
-          EOF
+          mkdir -p Payload
+          cp -R build/bad_query.app Payload/
+          zip -r bad_query.ipa Payload
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: bad_query_ipa
-          path: build/*.ipa
+          path: bad_query.ipa
