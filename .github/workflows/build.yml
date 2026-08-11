@@ -9,29 +9,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: List files
-        run: |
-          ls -la
-          ls -la bad_query/
-
-      - name: Compile
+      - name: Compile as dylib
         run: |
           cd bad_query
-          ls -la
           mkdir -p build
-          xcrun -sdk iphoneos clang -arch arm64 -c *.c -o build/bad_query.o
-          xcrun -sdk iphoneos clang -arch arm64 build/bad_query.o -o build/bad_query
+          xcrun -sdk iphoneos clang -arch arm64 -shared -o build/bad_query.dylib bad_query.c
 
-      - name: Create IPA
-        run: |
-          cd bad_query
-          mkdir -p Payload/bad_query.app
-          cp build/bad_query Payload/bad_query.app/
-          echo "APPL????" > Payload/bad_query.app/PkgInfo
-          zip -r bad_query.ipa Payload
-
-      - name: Upload IPA
+      - name: Upload dylib
         uses: actions/upload-artifact@v4
         with:
-          name: bad_query_ipa
-          path: bad_query/bad_query.ipa
+          name: bad_query_dylib
+          path: bad_query/build/bad_query.dylib
